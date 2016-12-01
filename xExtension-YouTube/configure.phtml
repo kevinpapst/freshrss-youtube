@@ -1,4 +1,26 @@
+
+<form action="<?php echo _url('extension', 'configure', 'e', urlencode($this->getName())); ?>" method="post">
+	<input type="hidden" name="_csrf" value="<?php echo FreshRSS_Auth::csrfToken(); ?>" />
+	<div class="form-group">
+		<label class="group-name" for="yt_height"><?php echo _t('ext.yt_videos.height'); ?></label>
+		<div class="group-controls">
+			<input type="number" id="yt_height" name="yt_height" value="<?php echo FreshRSS_Context::$user_conf->yt_player_height; ?>" min="50" data-leave-validation="1">
+		</div>
+		<label class="group-name" for="yt_width"><?php echo _t('ext.yt_videos.width'); ?></label>
+		<div class="group-controls">
+			<input type="number" id="yt_width" name="yt_width" value="<?php echo FreshRSS_Context::$user_conf->yt_player_width; ?>" min="100" data-leave-validation="1">
+		</div>
+	</div>
+
+	<div class="form-group form-actions">
+		<div class="group-controls">
+			<button type="submit" class="btn btn-important"><?php echo _t('gen.action.submit'); ?></button>
+			<button type="reset" class="btn"><?php echo _t('gen.action.cancel'); ?></button>
+		</div>
+	</div>
+</form>
+
 <p>
-	You can find the latest updates at
-	<a href="https://github.com/kevinpapst/freshrss-youtube" target="_blank">https://github.com/kevinpapst/freshrss-youtube</a>.
+	<?php echo _t('ext.yt_videos.updates'); ?>
+	<a href="https://github.com/kevinpapst/freshrss-youtube" target="_blank">GitHub</a>.
 </p>
