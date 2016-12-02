@@ -33,7 +33,7 @@ class YouTubeExtension extends Minz_Extension
         $this->loadConfigValues();
         $link = $entry->link();
 
-        if (stripos('www.youtube.com/watch?v=') === false) {
+        if (stripos($link, 'www.youtube.com/watch?v=') === false) {
             return $entry;
         }
 
