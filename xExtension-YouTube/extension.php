@@ -37,13 +37,11 @@ class YouTubeExtension extends Minz_Extension
             return $entry;
         }
 
-        $id = str_replace('http://www.youtube.com/watch?v=', '', $link);
-        $id = str_replace('https://www.youtube.com/watch?v=', '', $id);
+        $url = str_replace('//www.youtube.com/watch?v=', '//www.youtube.com/embed/', $link);
+        $url = str_replace('http://', 'https://', $url);
 
         $entry->_content(
-            '<iframe width="'.self::$width.'" height="'.self::$height.'" src="https://www.youtube.com/embed/' .
-            $id .
-            '" frameborder="0" allowfullscreen></iframe>' .
+            '<iframe width="'.self::$width.'" height="'.self::$height.'" src="'.$url.'" frameborder="0" allowfullscreen></iframe>' .
             $entry->content()
         );
 
