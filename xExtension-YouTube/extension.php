@@ -34,7 +34,7 @@ class YouTubeExtension extends Minz_Extension
      */
     protected function loadConfigValues()
     {
-        if (null === FreshRSS_Context || null === FreshRSS_Context::$user_conf) {
+        if (!defined('FreshRSS_Context') || null === FreshRSS_Context || null === FreshRSS_Context::$user_conf) {
             return;
         }
 
