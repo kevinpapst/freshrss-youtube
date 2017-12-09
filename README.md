@@ -24,5 +24,12 @@ More extensions can be found at [FreshRSS/Extensions](https://github.com/FreshRS
 
 ## Changelog
 
-0.3: Added installation docu
-0.2: Fixed "Use of undefined constant FreshRSS_Context"
+0.4: 
+* Added option to display original feed content (currently Youtube inserts a download icon link to the video file)
+* Fixed config loading
+    
+0.3: 
+* Added installation hints
+
+0.2: 
+* Fixed "Use of undefined constant FreshRSS_Context"

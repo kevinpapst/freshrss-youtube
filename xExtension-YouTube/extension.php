@@ -19,6 +19,11 @@ class YouTubeExtension extends Minz_Extension
      * @var int
      */
     public static $height = 315;
+	/**
+	 * Whether we display the original feed content
+	 * @var bool
+	 */
+    public static $showContent = false;
 
     /**
      * Initialize this extension
@@ -34,16 +39,19 @@ class YouTubeExtension extends Minz_Extension
      */
     protected function loadConfigValues()
     {
-        if (!defined('FreshRSS_Context') || null === FreshRSS_Context || null === FreshRSS_Context::$user_conf) {
+		if (!class_exists('FreshRSS_Context', false) || null === FreshRSS_Context::$user_conf) {
             return;
         }
 
-        if (FreshRSS_Context::$user_conf->yt_player_width != '') {
+		if (FreshRSS_Context::$user_conf->yt_player_width != '') {
             self::$width = FreshRSS_Context::$user_conf->yt_player_width;
         }
         if (FreshRSS_Context::$user_conf->yt_player_height != '') {
             self::$height = FreshRSS_Context::$user_conf->yt_player_height;
         }
+		if (FreshRSS_Context::$user_conf->yt_show_content != '') {
+			self::$showContent = (bool)FreshRSS_Context::$user_conf->yt_show_content;
+		}
     }
 
     /**
@@ -64,11 +72,13 @@ class YouTubeExtension extends Minz_Extension
         $url = str_replace('//www.youtube.com/watch?v=', '//www.youtube.com/embed/', $link);
         $url = str_replace('http://', 'https://', $url);
 
-        $entry->_content(
-            '<iframe width="' . self::$width . '" height="' . self::$height . '" src="' . $url .
-            '" frameborder="0" allowfullscreen></iframe>' .
-            $entry->content()
-        );
+        $html = '<iframe width="' . self::$width . '" height="' . self::$height . '" src="' . $url .'" frameborder="0" allowfullscreen></iframe>';
+
+        if (self::$showContent) {
+			$html .= $entry->content();
+		}
+
+        $entry->_content($html);
 
         return $entry;
     }
@@ -83,6 +93,7 @@ class YouTubeExtension extends Minz_Extension
         if (Minz_Request::isPost()) {
             FreshRSS_Context::$user_conf->yt_player_height = (int)Minz_Request::param('yt_height', '');
             FreshRSS_Context::$user_conf->yt_player_width = (int)Minz_Request::param('yt_width', '');
+			FreshRSS_Context::$user_conf->yt_show_content = (int)Minz_Request::param('yt_show_content', 0);
             FreshRSS_Context::$user_conf->save();
         }
     }
