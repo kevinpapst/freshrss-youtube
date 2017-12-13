@@ -32,6 +32,9 @@ More extensions can be found at [FreshRSS/Extensions](https://github.com/FreshRS
 
 ## Changelog
 
+0.5: 
+* Opened "API" for external usage
+
 0.4: 
 * Added option to display original feed content (currently Youtube inserts a download icon link to the video file)
 * Fixed config loading
