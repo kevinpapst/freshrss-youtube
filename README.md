@@ -32,6 +32,9 @@ More extensions can be found at [FreshRSS/Extensions](https://github.com/FreshRS
 
 ## Changelog
 
+0.6: 
+* Support cookie-less domain www.youtube-nocookie.com for embedding 
+
 0.5: 
 * Opened "API" for external usage
 

@@ -24,6 +24,11 @@ class YouTubeExtension extends Minz_Extension
      * @var bool
      */
     protected $showContent = false;
+    /**
+     * Switch to enable the Youtube No-Cookie domain
+     * @var bool
+     */
+    protected $useNoCookie = false;
 
     /**
      * Initialize this extension
@@ -52,6 +57,9 @@ class YouTubeExtension extends Minz_Extension
         }
         if (FreshRSS_Context::$user_conf->yt_show_content != '') {
             $this->showContent = (bool)FreshRSS_Context::$user_conf->yt_show_content;
+        }
+        if (FreshRSS_Context::$user_conf->yt_nocookie != '') {
+            $this->useNoCookie = (bool)FreshRSS_Context::$user_conf->yt_nocookie;
         }
     }
 
@@ -98,10 +106,17 @@ class YouTubeExtension extends Minz_Extension
     {
         $link = $entry->link();
 
-        $html = $this->getIFrameForLink($link);
-        if ($html === null) {
+        if (stripos($link, 'www.youtube.com/watch?v=') === false) {
             return $entry;
         }
+
+        $this->loadConfigValues();
+
+        if (stripos($entry->content(), '<iframe class="youtube-plugin-video"') !== false) {
+            return $entry;
+        }
+
+        $html = $this->getIFrameForLink($link);
 
         if ($this->showContent) {
             $html .= $entry->content();
@@ -120,13 +135,11 @@ class YouTubeExtension extends Minz_Extension
      */
     public function getIFrameForLink($link)
     {
-        $this->loadConfigValues();
-
-        if (stripos($link, 'www.youtube.com/watch?v=') === false) {
-            return null;
+        $domain = 'www.youtube.com';
+        if ($this->useNoCookie) {
+            $domain = 'www.youtube-nocookie.com';
         }
-
-        $url = str_replace('//www.youtube.com/watch?v=', '//www.youtube.com/embed/', $link);
+        $url = str_replace('//www.youtube.com/watch?v=', '//'.$domain.'/embed/', $link);
         $url = str_replace('http://', 'https://', $url);
 
         $html = $this->getIFrameHtml($url);
@@ -142,7 +155,7 @@ class YouTubeExtension extends Minz_Extension
      */
     public function getIFrameHtml($url)
     {
-        return '<iframe 
+        return '<iframe class="youtube-plugin-video"
                 style="height: ' . $this->height . 'px; width: ' . $this->width . 'px;" 
                 width="' . $this->width . '" 
                 height="' . $this->height . '" 
@@ -162,6 +175,7 @@ class YouTubeExtension extends Minz_Extension
             FreshRSS_Context::$user_conf->yt_player_height = (int)Minz_Request::param('yt_height', '');
             FreshRSS_Context::$user_conf->yt_player_width = (int)Minz_Request::param('yt_width', '');
             FreshRSS_Context::$user_conf->yt_show_content = (int)Minz_Request::param('yt_show_content', 0);
+            FreshRSS_Context::$user_conf->yt_nocookie = (int)Minz_Request::param('yt_nocookie', 0);
             FreshRSS_Context::$user_conf->save();
         }
     }

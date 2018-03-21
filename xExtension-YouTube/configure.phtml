@@ -17,6 +17,11 @@
 		<div class="group-controls">
 			<input type="checkbox" id="yt_show_content" name="yt_show_content" value="1" <?php if (FreshRSS_Context::$user_conf->yt_show_content != '') { echo 'checked'; }; ?>>
 		</div>
+
+		<label class="group-name" for="yt_nocookie"><?php echo _t('ext.yt_videos.use_nocookie'); ?></label>
+		<div class="group-controls">
+			<input type="checkbox" id="yt_nocookie" name="yt_nocookie" value="1" <?php if (FreshRSS_Context::$user_conf->yt_nocookie != '') { echo 'checked'; }; ?>>
+		</div>
 	</div>
 
 	<div class="form-group form-actions">
