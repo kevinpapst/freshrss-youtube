@@ -106,7 +106,7 @@ class YouTubeExtension extends Minz_Extension
     {
         $link = $entry->link();
 
-        if (stripos($link, 'www.youtube.com/watch?v=') === false) {
+        if (stripos($link, 'www.youtube.com/watch?v=') === false and stripos($link, 'videos/watch/') === false) {
             return $entry;
         }
 
@@ -115,9 +115,12 @@ class YouTubeExtension extends Minz_Extension
         if (stripos($entry->content(), '<iframe class="youtube-plugin-video"') !== false) {
             return $entry;
         }
-
-        $html = $this->getIFrameForLink($link);
-
+        if (stripos($link, 'www.youtube.com/watch?v=') !== false) {
+            $html = $this->getIFrameForLink($link);
+        }
+        else{ //peertube
+            $html = $this->getPeerTubeIFrameForLink($link);
+        }
         if ($this->showContent) {
             $html .= $entry->content();
         }
@@ -144,6 +147,20 @@ class YouTubeExtension extends Minz_Extension
 
         $html = $this->getIFrameHtml($url);
 
+        return $html;
+    }
+
+    /**
+    * Returns an HTML <iframe> for a given PeerTube watch URL
+    *
+    * @param string $link
+    * @return string
+    */
+    public function getPeerTubeIFrameForLink($link)
+    {
+        $url = str_replace('/watch', '/embed', $link);
+        $html = $this->getIFrameHtml($url);
+        
         return $html;
     }
 
