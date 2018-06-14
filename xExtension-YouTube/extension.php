@@ -106,7 +106,7 @@ class YouTubeExtension extends Minz_Extension
     {
         $link = $entry->link();
 
-        if (stripos($link, 'www.youtube.com/watch?v=') === false and stripos($link, 'videos/watch/') === false) {
+        if (preg_match('#^https?://www\.youtube\.com/watch\?v=|/videos/watch/[0-9a-f-]{36}$#', $link) !== 1) {
             return $entry;
         }
 
