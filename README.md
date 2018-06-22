@@ -1,6 +1,6 @@
 # FreshRSS - YouTube video extension
 
-This FreshRSS extension allows you to directly watch YouTube videos from within subscribed channel feeds.
+This FreshRSS extension allows you to directly watch YouTube/PeerTube videos from within subscribed channel feeds.
 
 To use it, upload the ```xExtension-YouTube``` directory to the FreshRSS `./extensions` directory on your server and enable it on the extension panel in FreshRSS.
 
@@ -31,6 +31,9 @@ With activated Youtube extension:
 More extensions can be found at [FreshRSS/Extensions](https://github.com/FreshRSS/Extensions).
 
 ## Changelog
+
+0.7:
+* Support for PeerTube feed
 
 0.6: 
 * Support cookie-less domain www.youtube-nocookie.com for embedding 

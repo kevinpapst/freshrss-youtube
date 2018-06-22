@@ -1,8 +1,8 @@
 {
-	"name": "YouTube Video Feed",
+	"name": "YouTube/PeerTube Video Feed",
 	"author": "Kevin Papst",
-	"description": "Embed YouTube feeds inside article content.",
-	"version": 0.6,
+	"description": "Embed YouTube/PeerTube feeds inside article content.",
+	"version": 0.7,
 	"entrypoint": "YouTube",
 	"type": "system"
 }
