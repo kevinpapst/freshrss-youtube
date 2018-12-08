@@ -36,7 +36,27 @@ class YouTubeExtension extends Minz_Extension
     public function init()
     {
         $this->registerHook('entry_before_display', array($this, 'embedYouTubeVideo'));
+        $this->registerHook('feed_before_insert', array($this, 'convertYoutubeFeedUrl'));
         $this->registerTranslates();
+    }
+
+    /**
+     * @param FreshRSS_Feed $feed
+     * @return FreshRSS_Feed
+     */
+    public function convertYoutubeFeedUrl($feed)
+    {
+        $matches = [];
+
+        if (preg_match('#^https?://www\.youtube\.com/channel/([0-9a-zA-Z_-]{6,36})$#', $feed->url(), $matches) !== 1) {
+            if (preg_match('#^https?://www\.youtube\.com/user/([0-9a-zA-Z_-0]{6,36})$#', $feed->url(), $matches) !== 1) {
+                return $feed;
+            }
+        }
+
+        $feed->_url('https://www.youtube.com/feeds/videos.xml?channel_id=' . $matches[1]);
+
+        return $feed;
     }
 
     /**
