@@ -206,6 +206,8 @@ class YouTubeExtension extends Minz_Extension
      */
     public function handleConfigureAction()
     {
+        $this->registerTranslates();
+
         $this->loadConfigValues();
 
         if (Minz_Request::isPost()) {
