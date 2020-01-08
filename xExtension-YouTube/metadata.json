@@ -4,5 +4,5 @@
 	"description": "Embed YouTube/PeerTube feeds inside article content.",
 	"version": 0.7,
 	"entrypoint": "YouTube",
-	"type": "system"
+	"type": "user"
 }
