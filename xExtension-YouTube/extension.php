@@ -69,16 +69,16 @@ class YouTubeExtension extends Minz_Extension
             return;
         }
 
-        if (FreshRSS_Context::$user_conf->yt_player_width != '') {
+        if (!empty(FreshRSS_Context::$user_conf->yt_player_width)) {
             $this->width = FreshRSS_Context::$user_conf->yt_player_width;
         }
-        if (FreshRSS_Context::$user_conf->yt_player_height != '') {
+        if (!empty(FreshRSS_Context::$user_conf->yt_player_height)) {
             $this->height = FreshRSS_Context::$user_conf->yt_player_height;
         }
-        if (FreshRSS_Context::$user_conf->yt_show_content != '') {
+        if (!empty(FreshRSS_Context::$user_conf->yt_show_content)) {
             $this->showContent = (bool)FreshRSS_Context::$user_conf->yt_show_content;
         }
-        if (FreshRSS_Context::$user_conf->yt_nocookie != '') {
+        if (!empty(FreshRSS_Context::$user_conf->yt_nocookie)) {
             $this->useNoCookie = (bool)FreshRSS_Context::$user_conf->yt_nocookie;
         }
     }
@@ -206,6 +206,8 @@ class YouTubeExtension extends Minz_Extension
      */
     public function handleConfigureAction()
     {
+        $this->registerTranslates();
+
         $this->loadConfigValues();
 
         if (Minz_Request::isPost()) {
