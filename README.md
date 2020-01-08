@@ -42,6 +42,11 @@ More extensions can be found at [FreshRSS/Extensions](https://github.com/FreshRS
 
 ## Changelog
 
+0.9:
+* Set the extension level at "user" (**users must re-enable the extension**)
+* Fix calls to unset configuration variables
+* Register translations when extension is disabled
+
 0.8:
 * Automatically convert channel and username URLs to feed URLs
 
