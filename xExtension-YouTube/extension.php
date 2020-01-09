@@ -41,18 +41,18 @@ class YouTubeExtension extends Minz_Extension
     }
 
     /**
-     * @param FreshRSS_Feed $feed
-     * @return FreshRSS_Feed
+     * @param string $url
+     * @return string
      */
     public function convertYoutubeFeedUrl($url)
     {
         $matches = [];
 
-        if (preg_match('#^https?://www\.youtube\.com/channel/([0-9a-zA-Z_-]{6,36})$#', $url, $matches) === 1) {
+        if (preg_match('#^https?://www\.youtube\.com/channel/([0-9a-zA-Z_-]{6,36})#', $url, $matches) === 1) {
             return 'https://www.youtube.com/feeds/videos.xml?channel_id=' . $matches[1];
         }
 
-        if (preg_match('#^https?://www\.youtube\.com/user/([0-9a-zA-Z_-]{6,36})$#', $url, $matches) === 1) {
+        if (preg_match('#^https?://www\.youtube\.com/user/([0-9a-zA-Z_-]{6,36})#', $url, $matches) === 1) {
             return 'https://www.youtube.com/feeds/videos.xml?user=' . $matches[1];
         }
 
