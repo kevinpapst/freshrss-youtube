@@ -153,10 +153,10 @@ class YouTubeExtension extends Minz_Extension
             return $entry;
         }
         if (stripos($link, 'www.youtube.com/watch?v=') !== false) {
-            $html = $this->forgeContentForLink($entry, $link);
+            $html = $this->getHtmlContentForLink($entry, $link);
         }
         else{ //peertube
-            $html = $this->forgePeerTubeContentForLink($entry, $link);
+            $html = $this->getHtmlPeerTubeContentForLink($entry, $link);
         }
 
         $entry->_content($html);
@@ -170,7 +170,7 @@ class YouTubeExtension extends Minz_Extension
      * @param string $link
      * @return string
      */
-    public function forgeContentForLink($entry, $link)
+    public function getHtmlContentForLink($entry, $link)
     {
         $domain = 'www.youtube.com';
         if ($this->useNoCookie) {
@@ -179,7 +179,7 @@ class YouTubeExtension extends Minz_Extension
         $url = str_replace('//www.youtube.com/watch?v=', '//'.$domain.'/embed/', $link);
         $url = str_replace('http://', 'https://', $url);
 
-        $html = $this->forgeHtml($entry, $url);
+        $html = $this->getHtml($entry, $url);
 
         return $html;
     }
@@ -190,10 +190,10 @@ class YouTubeExtension extends Minz_Extension
     * @param string $link
     * @return string
     */
-    public function forgePeerTubeContentForLink($entry, $link)
+    public function getHtmlPeerTubeContentForLink($entry, $link)
     {
         $url = str_replace('/watch', '/embed', $link);
-        $html = $this->forgeHtml($entry, $url);
+        $html = $this->getHtml($entry, $url);
         
         return $html;
     }
@@ -204,7 +204,7 @@ class YouTubeExtension extends Minz_Extension
      * @param string $url
      * @return string
      */
-    public function forgeHtml($entry, $url)
+    public function getHtml($entry, $url)
     {
         $content = '[error]';
         
