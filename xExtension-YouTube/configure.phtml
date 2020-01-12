@@ -1,3 +1,4 @@
+<?php $this->loadConfigValues(); ?>
 
 <form action="<?php echo _url('extension', 'configure', 'e', urlencode($this->getName())); ?>" method="post">
 	<input type="hidden" name="_csrf" value="<?php echo FreshRSS_Auth::csrfToken(); ?>" />
@@ -5,22 +6,24 @@
 
 		<label class="group-name" for="yt_height"><?php echo _t('ext.yt_videos.height'); ?></label>
 		<div class="group-controls">
-			<input type="number" id="yt_height" name="yt_height" value="<?php echo FreshRSS_Context::$user_conf->yt_player_height; ?>" min="50" data-leave-validation="1">
+			<input type="number" id="yt_height" name="yt_height" value="<?php echo $this->getHeight(); ?>" min="50" data-leave-validation="1">
 		</div>
 
 		<label class="group-name" for="yt_width"><?php echo _t('ext.yt_videos.width'); ?></label>
 		<div class="group-controls">
-			<input type="number" id="yt_width" name="yt_width" value="<?php echo FreshRSS_Context::$user_conf->yt_player_width; ?>" min="100" data-leave-validation="1">
+			<input type="number" id="yt_width" name="yt_width" value="<?php echo $this->getWidth(); ?>" min="100" data-leave-validation="1">
 		</div>
-
-		<label class="group-name" for="yt_show_content"><?php echo _t('ext.yt_videos.show_content'); ?></label>
+		
+		<label class="group-name" for="yt_content"><?php echo _t('ext.yt_videos.content.title'); ?></label>
 		<div class="group-controls">
-			<input type="checkbox" id="yt_show_content" name="yt_show_content" value="1" <?php if (FreshRSS_Context::$user_conf->yt_show_content != '') { echo 'checked'; }; ?>>
+			<input type="radio" id="yt_content_none" name="yt_content_choice" value="none" <?php if ($this->getContentHandling() == 'none') { echo 'checked'; }; ?>> <?php echo _t('ext.yt_videos.content.none'); ?><br />
+			<input type="radio" id="yt_content_append" name="yt_content_choice" value="append" <?php if ($this->getContentHandling() == 'append') { echo 'checked'; }; ?>> <?php echo _t('ext.yt_videos.content.append'); ?><br />
+			<input type="radio" id="yt_content_format" name="yt_content_choice" value="format" <?php if ($this->getContentHandling() == 'format') { echo 'checked'; }; ?>> <?php echo _t('ext.yt_videos.content.format'); ?><br />
 		</div>
 
 		<label class="group-name" for="yt_nocookie"><?php echo _t('ext.yt_videos.use_nocookie'); ?></label>
 		<div class="group-controls">
-			<input type="checkbox" id="yt_nocookie" name="yt_nocookie" value="1" <?php if (FreshRSS_Context::$user_conf->yt_nocookie != '') { echo 'checked'; }; ?>>
+			<input type="checkbox" id="yt_nocookie" name="yt_nocookie" value="1" <?php if ($this->getUseNoCookie()) { echo 'checked'; }; ?>>
 		</div>
 	</div>
 

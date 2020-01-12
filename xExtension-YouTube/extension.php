@@ -20,10 +20,10 @@ class YouTubeExtension extends Minz_Extension
      */
     protected $height = 315;
     /**
-     * Whether we display the original feed content
-     * @var bool
+     * Define how to handle original feed content
+     * @var string
      */
-    protected $showContent = false;
+    protected $contentHandling = 'none';
     /**
      * Switch to enable the Youtube No-Cookie domain
      * @var bool
@@ -69,16 +69,22 @@ class YouTubeExtension extends Minz_Extension
             return;
         }
 
-        if (!empty(FreshRSS_Context::$user_conf->yt_player_width)) {
+        if (FreshRSS_Context::$user_conf->yt_player_width != '') {
             $this->width = FreshRSS_Context::$user_conf->yt_player_width;
         }
-        if (!empty(FreshRSS_Context::$user_conf->yt_player_height)) {
+        if (FreshRSS_Context::$user_conf->yt_player_height != '') {
             $this->height = FreshRSS_Context::$user_conf->yt_player_height;
         }
-        if (!empty(FreshRSS_Context::$user_conf->yt_show_content)) {
-            $this->showContent = (bool)FreshRSS_Context::$user_conf->yt_show_content;
+        if (FreshRSS_Context::$user_conf->yt_content_handling != '') {
+            $this->contentHandling = FreshRSS_Context::$user_conf->yt_content_handling;
+        } else if (FreshRSS_Context::$user_conf->yt_show_content != '') {
+            if ((bool)FreshRSS_Context::$user_conf->yt_show_content) {
+                $this->contentHandling = 'append';
+            } else {
+                $this->contentHandling = 'none';
+            }
         }
-        if (!empty(FreshRSS_Context::$user_conf->yt_nocookie)) {
+        if (FreshRSS_Context::$user_conf->yt_nocookie != '') {
             $this->useNoCookie = (bool)FreshRSS_Context::$user_conf->yt_nocookie;
         }
     }
@@ -106,14 +112,25 @@ class YouTubeExtension extends Minz_Extension
     }
 
     /**
-     * Returns whether this extensions displays the content of the youtube feed.
+     * Returns how this extensions displays the content of the youtube feed.
+     * You have to call loadConfigValues() before this one, otherwise you get default values.
+     *
+     * @return string
+     */
+    public function getContentHandling()
+    {
+        return $this->contentHandling;
+    }
+    
+    /**
+     * Returns if this extension should use youtube-nocookie.com instead of youtube.com.
      * You have to call loadConfigValues() before this one, otherwise you get default values.
      *
      * @return bool
      */
-    public function isShowContent()
+    public function getUseNoCookie()
     {
-        return $this->showContent;
+        return $this->useNoCookie;
     }
 
     /**
@@ -136,13 +153,10 @@ class YouTubeExtension extends Minz_Extension
             return $entry;
         }
         if (stripos($link, 'www.youtube.com/watch?v=') !== false) {
-            $html = $this->getIFrameForLink($link);
+            $html = $this->forgeContentForLink($entry, $link);
         }
         else{ //peertube
-            $html = $this->getPeerTubeIFrameForLink($link);
-        }
-        if ($this->showContent) {
-            $html .= $entry->content();
+            $html = $this->forgePeerTubeContentForLink($entry, $link);
         }
 
         $entry->_content($html);
@@ -156,7 +170,7 @@ class YouTubeExtension extends Minz_Extension
      * @param string $link
      * @return string
      */
-    public function getIFrameForLink($link)
+    public function forgeContentForLink($entry, $link)
     {
         $domain = 'www.youtube.com';
         if ($this->useNoCookie) {
@@ -165,7 +179,7 @@ class YouTubeExtension extends Minz_Extension
         $url = str_replace('//www.youtube.com/watch?v=', '//'.$domain.'/embed/', $link);
         $url = str_replace('http://', 'https://', $url);
 
-        $html = $this->getIFrameHtml($url);
+        $html = $this->forgeHtml($entry, $url);
 
         return $html;
     }
@@ -176,29 +190,77 @@ class YouTubeExtension extends Minz_Extension
     * @param string $link
     * @return string
     */
-    public function getPeerTubeIFrameForLink($link)
+    public function forgePeerTubeContentForLink($entry, $link)
     {
         $url = str_replace('/watch', '/embed', $link);
-        $html = $this->getIFrameHtml($url);
+        $html = $this->forgeHtml($entry, $url);
         
         return $html;
     }
 
     /**
-     * Returns an HTML <iframe> for a given URL for the configured width and height.
+     * Returns an HTML <iframe> for a given URL for the configured width and height, with content ignored, appended or formated.
      *
      * @param string $url
      * @return string
      */
-    public function getIFrameHtml($url)
+    public function forgeHtml($entry, $url)
     {
-        return '<iframe class="youtube-plugin-video"
+        $content = '[error]';
+        
+        $iframe = '<iframe class="youtube-plugin-video"
                 style="height: ' . $this->height . 'px; width: ' . $this->width . 'px;" 
                 width="' . $this->width . '" 
                 height="' . $this->height . '" 
                 src="' . $url . '" 
                 frameborder="0" 
-                allowfullscreen></iframe>';
+                allowFullScreen></iframe>';
+        
+        switch ($this->contentHandling) {
+            case 'none':
+                $content = $iframe;
+                break;
+            case 'append':
+                $content = $iframe . $entry->content();
+                break;
+            case 'format':
+                $doc = new DOMDocument();
+                $doc->encoding = 'UTF-8';
+                $doc->recover = true;
+                $doc->strictErrorChecking = false;
+
+                if ($doc->loadHTML('<?xml encoding="utf-8" ?>' . $entry->content()))
+                {
+                    $xpath = new DOMXpath($doc);
+
+                    $titles = $xpath->evaluate("//*[@class='enclosure-title']");
+                    $thumbnails = $xpath->evaluate("//*[@class='enclosure-thumbnail']/@src");
+                    $descriptions = $xpath->evaluate("//*[@class='enclosure-description']");
+
+                    $content = '<div class="enclosure">';
+
+                    if ($titles->length > 0) {
+                        $content .= '<p class="enclosure-title" hidden>' . $titles[0]->nodeValue . '</p>';
+                    }
+
+                    if ($thumbnails->length > 0) {
+                        $content .= '<p hidden><img class="enclosure-thumbnail" src="' . $thumbnails[0]->nodeValue . '" alt=""/></p>';
+                    }
+
+                    $content .= $iframe;
+
+                    if ($descriptions->length > 0) {
+                        $content .= '<p class="enclosure-description">' . nl2br(htmlentities($descriptions[0]->nodeValue)) . '</p>';
+                    }
+
+                    $content .= "</div>\n";
+                }
+
+                break;
+        }
+
+
+        return $content;
     }
 
     /**
@@ -213,7 +275,7 @@ class YouTubeExtension extends Minz_Extension
         if (Minz_Request::isPost()) {
             FreshRSS_Context::$user_conf->yt_player_height = (int)Minz_Request::param('yt_height', '');
             FreshRSS_Context::$user_conf->yt_player_width = (int)Minz_Request::param('yt_width', '');
-            FreshRSS_Context::$user_conf->yt_show_content = (int)Minz_Request::param('yt_show_content', 0);
+            FreshRSS_Context::$user_conf->yt_content_handling = (string)Minz_Request::param('yt_content_choice', '');
             FreshRSS_Context::$user_conf->yt_nocookie = (int)Minz_Request::param('yt_nocookie', 0);
             FreshRSS_Context::$user_conf->save();
         }
