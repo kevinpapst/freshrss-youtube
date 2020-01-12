@@ -252,7 +252,6 @@ class YouTubeExtension extends Minz_Extension
 
                     $content .= "</div>\n";
                 }
-
                 break;
             default:
                 $content = $iframe;
