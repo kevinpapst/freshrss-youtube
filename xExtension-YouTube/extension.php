@@ -217,9 +217,6 @@ class YouTubeExtension extends Minz_Extension
                 allowFullScreen></iframe>';
         
         switch ($this->contentHandling) {
-            case 'none':
-                $content = $iframe;
-                break;
             case 'append':
                 $content = $iframe . $entry->content();
                 break;
@@ -256,6 +253,9 @@ class YouTubeExtension extends Minz_Extension
                     $content .= "</div>\n";
                 }
 
+                break;
+            default:
+                $content = $iframe;
                 break;
         }
 
