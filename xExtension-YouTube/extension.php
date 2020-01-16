@@ -206,7 +206,7 @@ class YouTubeExtension extends Minz_Extension
      */
     public function getHtml($entry, $url)
     {
-        $content = '[error]';
+        $content = '';
         
         $iframe = '<iframe class="youtube-plugin-video"
                 style="height: ' . $this->height . 'px; width: ' . $this->width . 'px;" 
