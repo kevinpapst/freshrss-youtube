@@ -20,10 +20,10 @@ class YouTubeExtension extends Minz_Extension
      */
     protected $height = 315;
     /**
-     * Define how to handle original feed content
-     * @var string
+     * Whether we display the original feed content
+     * @var bool
      */
-    protected $contentHandling = 'none';
+    protected $showContent = false;
     /**
      * Switch to enable the Youtube No-Cookie domain
      * @var bool
@@ -75,14 +75,8 @@ class YouTubeExtension extends Minz_Extension
         if (FreshRSS_Context::$user_conf->yt_player_height != '') {
             $this->height = FreshRSS_Context::$user_conf->yt_player_height;
         }
-        if (FreshRSS_Context::$user_conf->yt_content_handling != '') {
-            $this->contentHandling = FreshRSS_Context::$user_conf->yt_content_handling;
-        } else if (FreshRSS_Context::$user_conf->yt_show_content != '') {
-            if ((bool)FreshRSS_Context::$user_conf->yt_show_content) {
-                $this->contentHandling = 'append';
-            } else {
-                $this->contentHandling = 'none';
-            }
+        if (FreshRSS_Context::$user_conf->yt_show_content != '') {
+            $this->showContent = (bool)FreshRSS_Context::$user_conf->yt_show_content;
         }
         if (FreshRSS_Context::$user_conf->yt_nocookie != '') {
             $this->useNoCookie = (bool)FreshRSS_Context::$user_conf->yt_nocookie;
@@ -112,14 +106,14 @@ class YouTubeExtension extends Minz_Extension
     }
 
     /**
-     * Returns how this extensions displays the content of the youtube feed.
+     * Returns whether this extensions displays the content of the youtube feed.
      * You have to call loadConfigValues() before this one, otherwise you get default values.
      *
-     * @return string
+     * @return bool
      */
-    public function getContentHandling()
+    public function getShowContent()
     {
-        return $this->contentHandling;
+        return $this->showContent;
     }
     
     /**
@@ -155,7 +149,7 @@ class YouTubeExtension extends Minz_Extension
         if (stripos($link, 'www.youtube.com/watch?v=') !== false) {
             $html = $this->getHtmlContentForLink($entry, $link);
         }
-        else{ //peertube
+        else { //peertube
             $html = $this->getHtmlPeerTubeContentForLink($entry, $link);
         }
 
@@ -215,55 +209,51 @@ class YouTubeExtension extends Minz_Extension
                 src="' . $url . '" 
                 frameborder="0" 
                 allowFullScreen></iframe>';
-        
-        switch ($this->contentHandling) {
-            case 'append':
-                $content = $iframe . $entry->content();
-                break;
-            case 'format':
-                $doc = new DOMDocument();
-                $doc->encoding = 'UTF-8';
-                $doc->recover = true;
-                $doc->strictErrorChecking = false;
 
-                if ($doc->loadHTML('<?xml encoding="utf-8" ?>' . $entry->content()))
-                {
-                    $xpath = new DOMXpath($doc);
+        if ($this->showContent) {
+            $doc = new DOMDocument();
+            $doc->encoding = 'UTF-8';
+            $doc->recover = true;
+            $doc->strictErrorChecking = false;
 
-                    $titles = $xpath->evaluate("//*[@class='enclosure-title']");
-                    $thumbnails = $xpath->evaluate("//*[@class='enclosure-thumbnail']/@src");
-                    $descriptions = $xpath->evaluate("//*[@class='enclosure-description']");
+            if ($doc->loadHTML('<?xml encoding="utf-8" ?>' . $entry->content()))
+            {
+                $xpath = new DOMXpath($doc);
 
-                    
-                    $content = '<div class="enclosure">';
+                $titles = $xpath->evaluate("//*[@class='enclosure-title']");
+                $thumbnails = $xpath->evaluate("//*[@class='enclosure-thumbnail']/@src");
+                $descriptions = $xpath->evaluate("//*[@class='enclosure-description']");
 
-                    // We hide the title so it doesn't appear in the final article, which would be redundant with the RSS article title,
-                    // but we keep it in the content anyway, so RSS clients can extract it if needed.
-                    if ($titles->length > 0) {
-                        $content .= '<p class="enclosure-title" hidden>' . $titles[0]->nodeValue . '</p>';
-                    }
+                $content = '<div class="enclosure">';
 
-                    // We hide the thumbnail so it doesn't appear in the final article, which would be redundant with the YouTube player preview,
-                    // but we keep it in the content anyway, so RSS clients can extract it to display a preview where it wants (in article listing,
-                    // by example, like with Reeder).
-                    if ($thumbnails->length > 0) {
-                        $content .= '<p hidden><img class="enclosure-thumbnail" src="' . $thumbnails[0]->nodeValue . '" alt=""/></p>';
-                    }
-
-                    $content .= $iframe;
-
-                    if ($descriptions->length > 0) {
-                        $content .= '<p class="enclosure-description">' . nl2br(htmlentities($descriptions[0]->nodeValue)) . '</p>';
-                    }
-
-                    $content .= "</div>\n";
+                // We hide the title so it doesn't appear in the final article, which would be redundant with the RSS article title,
+                // but we keep it in the content anyway, so RSS clients can extract it if needed.
+                if ($titles->length > 0) {
+                    $content .= '<p class="enclosure-title" hidden>' . $titles[0]->nodeValue . '</p>';
                 }
-                break;
-            default:
-                $content = $iframe;
-                break;
-        }
 
+                // We hide the thumbnail so it doesn't appear in the final article, which would be redundant with the YouTube player preview,
+                // but we keep it in the content anyway, so RSS clients can extract it to display a preview where it wants (in article listing,
+                // by example, like with Reeder).
+                if ($thumbnails->length > 0) {
+                    $content .= '<p hidden><img class="enclosure-thumbnail" src="' . $thumbnails[0]->nodeValue . '" alt=""/></p>';
+                }
+
+                $content .= $iframe;
+
+                if ($descriptions->length > 0) {
+                    $content .= '<p class="enclosure-description">' . nl2br(htmlentities($descriptions[0]->nodeValue)) . '</p>';
+                }
+
+                $content .= "</div>\n";
+            }
+            else {
+                $content = $iframe . $entry->content();
+            }
+        }
+        else {
+            $content = $iframe;
+        }
 
         return $content;
     }
@@ -280,7 +270,7 @@ class YouTubeExtension extends Minz_Extension
         if (Minz_Request::isPost()) {
             FreshRSS_Context::$user_conf->yt_player_height = (int)Minz_Request::param('yt_height', '');
             FreshRSS_Context::$user_conf->yt_player_width = (int)Minz_Request::param('yt_width', '');
-            FreshRSS_Context::$user_conf->yt_content_handling = Minz_Request::param('yt_content_choice', '');
+            FreshRSS_Context::$user_conf->yt_show_content = (bool)Minz_Request::param('yt_show_content', 0);
             FreshRSS_Context::$user_conf->yt_nocookie = (int)Minz_Request::param('yt_nocookie', 0);
             FreshRSS_Context::$user_conf->save();
         }
