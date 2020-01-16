@@ -234,12 +234,18 @@ class YouTubeExtension extends Minz_Extension
                     $thumbnails = $xpath->evaluate("//*[@class='enclosure-thumbnail']/@src");
                     $descriptions = $xpath->evaluate("//*[@class='enclosure-description']");
 
+                    
                     $content = '<div class="enclosure">';
 
+                    // We hide the title so it doesn't appear in the final article, which would be redundant with the RSS article title,
+                    // but we keep it in the content anyway, so RSS clients can extract it if needed.
                     if ($titles->length > 0) {
                         $content .= '<p class="enclosure-title" hidden>' . $titles[0]->nodeValue . '</p>';
                     }
 
+                    // We hide the thumbnail so it doesn't appear in the final article, which would be redundant with the YouTube player preview,
+                    // but we keep it in the content anyway, so RSS clients can extract it to display a preview where it wants (in article listing,
+                    // by example, like with Reeder).
                     if ($thumbnails->length > 0) {
                         $content .= '<p hidden><img class="enclosure-thumbnail" src="' . $thumbnails[0]->nodeValue . '" alt=""/></p>';
                     }
