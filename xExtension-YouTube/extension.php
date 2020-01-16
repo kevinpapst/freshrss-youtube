@@ -269,20 +269,22 @@ class YouTubeExtension extends Minz_Extension
     }
 
     /**
-     * Saves the user settings for this extension.
+     * This function is called by FreshRSS when the configuration page is loaded, and when configuration is saved.
+     *  - We save configuration in case of a post.
+     *  - We (re)load configuration in all case, so they are in-sync after a save and before a page load.
      */
     public function handleConfigureAction()
     {
         $this->registerTranslates();
 
-        $this->loadConfigValues();
-
         if (Minz_Request::isPost()) {
             FreshRSS_Context::$user_conf->yt_player_height = (int)Minz_Request::param('yt_height', '');
             FreshRSS_Context::$user_conf->yt_player_width = (int)Minz_Request::param('yt_width', '');
-            FreshRSS_Context::$user_conf->yt_content_handling = (string)Minz_Request::param('yt_content_choice', '');
+            FreshRSS_Context::$user_conf->yt_content_handling = Minz_Request::param('yt_content_choice', '');
             FreshRSS_Context::$user_conf->yt_nocookie = (int)Minz_Request::param('yt_nocookie', 0);
             FreshRSS_Context::$user_conf->save();
         }
+
+        $this->loadConfigValues();
     }
 }
