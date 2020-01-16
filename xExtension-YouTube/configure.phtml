@@ -14,11 +14,20 @@
 			<input type="number" id="yt_width" name="yt_width" value="<?php echo $this->getWidth(); ?>" min="100" data-leave-validation="1">
 		</div>
 		
-		<label class="group-name" for="yt_content"><?php echo _t('ext.yt_videos.content.title'); ?></label>
+		<label class="group-name" for="yt_content_none"><?php echo _t('ext.yt_videos.content.title'); ?></label>
 		<div class="group-controls">
-			<input type="radio" id="yt_content_none" name="yt_content_choice" value="none" <?php if ($this->getContentHandling() === 'none') { echo 'checked'; }; ?>> <?php echo _t('ext.yt_videos.content.none'); ?><br />
-			<input type="radio" id="yt_content_append" name="yt_content_choice" value="append" <?php if ($this->getContentHandling() === 'append') { echo 'checked'; }; ?>> <?php echo _t('ext.yt_videos.content.append'); ?><br />
-			<input type="radio" id="yt_content_format" name="yt_content_choice" value="format" <?php if ($this->getContentHandling() === 'format') { echo 'checked'; }; ?>> <?php echo _t('ext.yt_videos.content.format'); ?><br />
+			<label for="yt_content_none">
+				<input type="radio" id="yt_content_none" name="yt_content_choice" value="none" <?= $this->getContentHandling() === 'none' ? 'checked' : '' ?>>
+				<?php echo _t('ext.yt_videos.content.none'); ?>
+			</label>
+			<label for="yt_content_append">
+				<input type="radio" id="yt_content_append" name="yt_content_choice" value="append" <?= $this->getContentHandling() === 'append' ? 'checked' : '' ?>>
+				<?php echo _t('ext.yt_videos.content.append'); ?>
+			</label>
+			<label for="yt_content_format">
+				<input type="radio" id="yt_content_format" name="yt_content_choice" value="format" <?= $this->getContentHandling() === 'format' ? 'checked' : '' ?>>
+				<?php echo _t('ext.yt_videos.content.format'); ?>
+			</label>
 		</div>
 
 		<label class="group-name" for="yt_nocookie"><?php echo _t('ext.yt_videos.use_nocookie'); ?></label>
