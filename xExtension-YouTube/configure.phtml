@@ -12,14 +12,18 @@
 			<input type="number" id="yt_width" name="yt_width" value="<?= $this->getWidth() ?>" min="100" data-leave-validation="1">
 		</div>
 		
-		<label class="group-name" for="yt_show_content"><?= _t('ext.yt_videos.show_content') ?></label>
 		<div class="group-controls">
-			<input type="checkbox" id="yt_show_content" name="yt_show_content" value="1" <?= $this->isShowContent() ? 'checked' : '' ?>>
+			<label class="checkbox" for="yt_show_content">
+				<input type="checkbox" id="yt_show_content" name="yt_show_content" value="1" <?= $this->isShowContent() ? 'checked' : '' ?>>
+				<?= _t('ext.yt_videos.show_content') ?>
+			</label>
 		</div>
 
-		<label class="group-name" for="yt_nocookie"><?= _t('ext.yt_videos.use_nocookie') ?></label>
 		<div class="group-controls">
-			<input type="checkbox" id="yt_nocookie" name="yt_nocookie" value="1" <?= $this->getUseNoCookie() ? 'checked' : '' ?>>
+			<label class="checkbox" for="yt_nocookie">
+				<input type="checkbox" id="yt_nocookie" name="yt_nocookie" value="1" <?= $this->getUseNoCookie() ? 'checked' : '' ?>>
+				<?= _t('ext.yt_videos.use_nocookie') ?>
+			</label>
 		</div>
 	</div>
 

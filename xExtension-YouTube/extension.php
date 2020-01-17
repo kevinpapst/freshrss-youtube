@@ -111,7 +111,7 @@ class YouTubeExtension extends Minz_Extension
      *
      * @return bool
      */
-    public function getShowContent()
+    public function isShowContent()
     {
         return $this->showContent;
     }
