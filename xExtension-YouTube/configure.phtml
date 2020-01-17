@@ -14,7 +14,7 @@
 		
 		<label class="group-name" for="yt_show_content"><?= _t('ext.yt_videos.show_content') ?></label>
 		<div class="group-controls">
-			<input type="checkbox" id="yt_show_content" name="yt_show_content" value="1" <?= $this->getShowContent() ? 'checked' : '' ?>>
+			<input type="checkbox" id="yt_show_content" name="yt_show_content" value="1" <?= $this->isShowContent() ? 'checked' : '' ?>>
 		</div>
 
 		<label class="group-name" for="yt_nocookie"><?= _t('ext.yt_videos.use_nocookie') ?></label>
