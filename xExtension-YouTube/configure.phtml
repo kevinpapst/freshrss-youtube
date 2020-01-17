@@ -21,7 +21,7 @@
 
 		<div class="group-controls">
 			<label class="checkbox" for="yt_nocookie">
-				<input type="checkbox" id="yt_nocookie" name="yt_nocookie" value="1" <?= $this->getUseNoCookie() ? 'checked' : '' ?>>
+				<input type="checkbox" id="yt_nocookie" name="yt_nocookie" value="1" <?= $this->isUseNoCookieDomain() ? 'checked' : '' ?>>
 				<?= _t('ext.yt_videos.use_nocookie') ?>
 			</label>
 		</div>

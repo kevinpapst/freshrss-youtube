@@ -122,7 +122,7 @@ class YouTubeExtension extends Minz_Extension
      *
      * @return bool
      */
-    public function getUseNoCookie()
+    public function isUseNoCookieDomain()
     {
         return $this->useNoCookie;
     }
