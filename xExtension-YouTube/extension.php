@@ -69,16 +69,16 @@ class YouTubeExtension extends Minz_Extension
             return;
         }
 
-        if (!empty(FreshRSS_Context::$user_conf->yt_player_width)) {
+        if (FreshRSS_Context::$user_conf->yt_player_width != '') {
             $this->width = FreshRSS_Context::$user_conf->yt_player_width;
         }
-        if (!empty(FreshRSS_Context::$user_conf->yt_player_height)) {
+        if (FreshRSS_Context::$user_conf->yt_player_height != '') {
             $this->height = FreshRSS_Context::$user_conf->yt_player_height;
         }
-        if (!empty(FreshRSS_Context::$user_conf->yt_show_content)) {
+        if (FreshRSS_Context::$user_conf->yt_show_content != '') {
             $this->showContent = (bool)FreshRSS_Context::$user_conf->yt_show_content;
         }
-        if (!empty(FreshRSS_Context::$user_conf->yt_nocookie)) {
+        if (FreshRSS_Context::$user_conf->yt_nocookie != '') {
             $this->useNoCookie = (bool)FreshRSS_Context::$user_conf->yt_nocookie;
         }
     }
@@ -115,6 +115,17 @@ class YouTubeExtension extends Minz_Extension
     {
         return $this->showContent;
     }
+    
+    /**
+     * Returns if this extension should use youtube-nocookie.com instead of youtube.com.
+     * You have to call loadConfigValues() before this one, otherwise you get default values.
+     *
+     * @return bool
+     */
+    public function isUseNoCookieDomain()
+    {
+        return $this->useNoCookie;
+    }
 
     /**
      * Inserts the YouTube video iframe into the content of an entry, if the entries link points to a YouTube watch URL.
@@ -136,13 +147,10 @@ class YouTubeExtension extends Minz_Extension
             return $entry;
         }
         if (stripos($link, 'www.youtube.com/watch?v=') !== false) {
-            $html = $this->getIFrameForLink($link);
+            $html = $this->getHtmlContentForLink($entry, $link);
         }
-        else{ //peertube
-            $html = $this->getPeerTubeIFrameForLink($link);
-        }
-        if ($this->showContent) {
-            $html .= $entry->content();
+        else { //peertube
+            $html = $this->getHtmlPeerTubeContentForLink($entry, $link);
         }
 
         $entry->_content($html);
@@ -156,7 +164,7 @@ class YouTubeExtension extends Minz_Extension
      * @param string $link
      * @return string
      */
-    public function getIFrameForLink($link)
+    public function getHtmlContentForLink($entry, $link)
     {
         $domain = 'www.youtube.com';
         if ($this->useNoCookie) {
@@ -165,7 +173,7 @@ class YouTubeExtension extends Minz_Extension
         $url = str_replace('//www.youtube.com/watch?v=', '//'.$domain.'/embed/', $link);
         $url = str_replace('http://', 'https://', $url);
 
-        $html = $this->getIFrameHtml($url);
+        $html = $this->getHtml($entry, $url);
 
         return $html;
     }
@@ -176,46 +184,97 @@ class YouTubeExtension extends Minz_Extension
     * @param string $link
     * @return string
     */
-    public function getPeerTubeIFrameForLink($link)
+    public function getHtmlPeerTubeContentForLink($entry, $link)
     {
         $url = str_replace('/watch', '/embed', $link);
-        $html = $this->getIFrameHtml($url);
+        $html = $this->getHtml($entry, $url);
         
         return $html;
     }
 
     /**
-     * Returns an HTML <iframe> for a given URL for the configured width and height.
+     * Returns an HTML <iframe> for a given URL for the configured width and height, with content ignored, appended or formated.
      *
      * @param string $url
      * @return string
      */
-    public function getIFrameHtml($url)
+    public function getHtml($entry, $url)
     {
-        return '<iframe class="youtube-plugin-video"
+        $content = '';
+        
+        $iframe = '<iframe class="youtube-plugin-video"
                 style="height: ' . $this->height . 'px; width: ' . $this->width . 'px;" 
                 width="' . $this->width . '" 
                 height="' . $this->height . '" 
                 src="' . $url . '" 
                 frameborder="0" 
-                allowfullscreen></iframe>';
+                allowFullScreen></iframe>';
+
+        if ($this->showContent) {
+            $doc = new DOMDocument();
+            $doc->encoding = 'UTF-8';
+            $doc->recover = true;
+            $doc->strictErrorChecking = false;
+
+            if ($doc->loadHTML('<?xml encoding="utf-8" ?>' . $entry->content()))
+            {
+                $xpath = new DOMXpath($doc);
+
+                $titles = $xpath->evaluate("//*[@class='enclosure-title']");
+                $thumbnails = $xpath->evaluate("//*[@class='enclosure-thumbnail']/@src");
+                $descriptions = $xpath->evaluate("//*[@class='enclosure-description']");
+
+                $content = '<div class="enclosure">';
+
+                // We hide the title so it doesn't appear in the final article, which would be redundant with the RSS article title,
+                // but we keep it in the content anyway, so RSS clients can extract it if needed.
+                if ($titles->length > 0) {
+                    $content .= '<p class="enclosure-title" hidden>' . $titles[0]->nodeValue . '</p>';
+                }
+
+                // We hide the thumbnail so it doesn't appear in the final article, which would be redundant with the YouTube player preview,
+                // but we keep it in the content anyway, so RSS clients can extract it to display a preview where it wants (in article listing,
+                // by example, like with Reeder).
+                if ($thumbnails->length > 0) {
+                    $content .= '<p hidden><img class="enclosure-thumbnail" src="' . $thumbnails[0]->nodeValue . '" alt=""/></p>';
+                }
+
+                $content .= $iframe;
+
+                if ($descriptions->length > 0) {
+                    $content .= '<p class="enclosure-description">' . nl2br(htmlentities($descriptions[0]->nodeValue)) . '</p>';
+                }
+
+                $content .= "</div>\n";
+            }
+            else {
+                $content = $iframe . $entry->content();
+            }
+        }
+        else {
+            $content = $iframe;
+        }
+
+        return $content;
     }
 
     /**
-     * Saves the user settings for this extension.
+     * This function is called by FreshRSS when the configuration page is loaded, and when configuration is saved.
+     *  - We save configuration in case of a post.
+     *  - We (re)load configuration in all case, so they are in-sync after a save and before a page load.
      */
     public function handleConfigureAction()
     {
         $this->registerTranslates();
 
-        $this->loadConfigValues();
-
         if (Minz_Request::isPost()) {
             FreshRSS_Context::$user_conf->yt_player_height = (int)Minz_Request::param('yt_height', '');
             FreshRSS_Context::$user_conf->yt_player_width = (int)Minz_Request::param('yt_width', '');
-            FreshRSS_Context::$user_conf->yt_show_content = (int)Minz_Request::param('yt_show_content', 0);
+            FreshRSS_Context::$user_conf->yt_show_content = (bool)Minz_Request::param('yt_show_content', 0);
             FreshRSS_Context::$user_conf->yt_nocookie = (int)Minz_Request::param('yt_nocookie', 0);
             FreshRSS_Context::$user_conf->save();
         }
+
+        $this->loadConfigValues();
     }
 }
