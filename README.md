@@ -43,8 +43,8 @@ More extensions can be found at [FreshRSS/Extensions](https://github.com/FreshRS
 ## Changelog
 
 0.10:
-* Enhance feed content formatting when included.
-* Enhance YouTube URL matching.
+* Enhance feed content formatting when included
+* Enhance YouTube URL matching
 
 0.9:
 * Set the extension level at "user" (**users must re-enable the extension**)
